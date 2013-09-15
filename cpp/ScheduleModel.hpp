@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QAbstractListModel>
 #include <string>
+#include <HsFFI.h>
 
 class ScheduleModel : public QAbstractListModel {
 
@@ -13,12 +14,10 @@ class ScheduleModel : public QAbstractListModel {
 
     // Constructors and destructors
     ScheduleModel(std::string filename);
-    ScheduleModel(ScheduleModel const& other) = delete;
-    ScheduleModel(ScheduleModel&& other);
+    ScheduleModel(ScheduleModel&& other) : m_schedule(0) { swap(*this, other); }
     virtual ~ScheduleModel();
 
     // Operators
-    //    ScheduleModel& operator=(ScheduleModel const& other) = delete; TODO: is this needed?
     ScheduleModel& operator=(ScheduleModel other) {
       swap(*this, other);
       return *this;
@@ -44,8 +43,7 @@ class ScheduleModel : public QAbstractListModel {
   
   private:
 
-  
-    void const* m_schedule;
+    HsStablePtr m_schedule;
     int m_week;
 
   signals:
