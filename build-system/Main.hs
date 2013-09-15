@@ -143,6 +143,7 @@ main = shakeArgs shakeOptions $ do
 
     builddir ++ "/generated/rcc/resources.rcc" *> \out -> do
       res <- getDirectoryFiles "" ["gui//*.qml", "gui//*.js"]
+      need res
       writeFileChanged out $ unlines $ concat $
         [ ["<!DOCTYPE RCC><RCC version=\"1.0\">", "<qresource>"]
         , map (\x -> "  <file alias=\"" ++ x ++ "\">" ++ "../../../" </> x ++ "</file>") res
