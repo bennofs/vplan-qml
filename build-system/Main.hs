@@ -75,10 +75,6 @@ runCXX config source out = do
       flags <- withPackages config getCompilerFlags
       system' cxx $ cxxflags ++ flags ++ ["-o", out, "-c", source]
 
--- | This function drops the build prefix from a file name. The build prefix is "build/*".
-dropBuildPrefix :: FilePath -> FilePath
-dropBuildPrefix = dropDirectory1 . dropDirectory1
-
 -- | Find all required object files
 findObjects :: Action [FilePath]
 findObjects = do
@@ -89,11 +85,15 @@ findObjects = do
     [ [ builddir </> "objects/cpp" </> s -<.> "cpp.o" | s <- cppSources, listToMaybe s /= Just '.']
     , [ builddir </> "objects/hs" </> s  -<.> "hs.o"  | s <- hsSources, listToMaybe s /= Just '.']
     , [ builddir </> "objects/moc" </> s -<.> "moc.o" | s <- cppHeaders, listToMaybe s /= Just '.']
+    , [ builddir </> x | x <- ["objects/rcc/resources.rcc.o"]]
     ]
 
 main :: IO ()
 main = shakeArgs shakeOptions $ do
+  
     config <- findPackages (builddir </> "info/configure") [qt5core, qt5gui, qt5quick, qt5qml, haskell]
+
+    want [builddir </> "bin/vplan-qml"]
 
     [builddir ++ "/objects/hs//*.hs.o", builddir ++ "/interfaces/hs//*.hi", builddir ++ "/stubs/hs//*_stub.h"] *>> \[outO, _, _] -> do
       let getGHC x = fromMaybe (error "GHC not found") $ x ^? variables . ix "ghc"
@@ -139,6 +139,23 @@ main = shakeArgs shakeOptions $ do
       let source = "cpp" </> dropDirectoryN 3 out -<.> ""
       deps <- readFileLines (builddir </> "info/deps" </> source <.> "deps")
       for deps (fmap . fromMaybe <*> resolveInclude includeDirs) >>= need
+      runCXX config source out
+
+    "resources.rcc" *> \out -> do
+      res <- getDirectoryFiles "" ["gui//*.qml", "gui//*.js"]
+      writeFileChanged out $ unlines $ concat $
+        [ ["<!DOCTYPE RCC><RCC version=\"1.0\">", "<qresource>"]
+        , map (\x -> "  <file>" ++ x ++ "</file>") res
+        , [ "</qresource>", "</RCC>"]
+        ]
+
+    builddir ++ "/generated/rcc//*.rcc.cpp" *> \out -> do
+      let source = dropDirectoryN 3 $ out -<.> ""
+      need [source]
+      join $ withPackage config qt5core $ qt5rcc source out
+
+    builddir ++ "/objects/rcc//*.o" *> \out -> do
+      let source = builddir </> "generated/rcc" </> dropDirectoryN 3 out -<.> "cpp"
       runCXX config source out
 
     builddir ++ "/objects/moc//*.moc.o" *> \out -> do

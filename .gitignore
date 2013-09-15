@@ -1,2 +1,3 @@
 .shake.database
 _build
+*.rcc
