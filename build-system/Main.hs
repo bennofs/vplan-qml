@@ -141,16 +141,16 @@ main = shakeArgs shakeOptions $ do
       for deps (fmap . fromMaybe <*> resolveInclude includeDirs) >>= need
       runCXX config source out
 
-    "resources.rcc" *> \out -> do
+    builddir ++ "/generated/rcc/resources.rcc" *> \out -> do
       res <- getDirectoryFiles "" ["gui//*.qml", "gui//*.js"]
       writeFileChanged out $ unlines $ concat $
         [ ["<!DOCTYPE RCC><RCC version=\"1.0\">", "<qresource>"]
-        , map (\x -> "  <file>" ++ x ++ "</file>") res
+        , map (\x -> "  <file alias=\"" ++ x ++ "\">" ++ "../../../" </> x ++ "</file>") res
         , [ "</qresource>", "</RCC>"]
         ]
 
     builddir ++ "/generated/rcc//*.rcc.cpp" *> \out -> do
-      let source = dropDirectoryN 3 $ out -<.> ""
+      let source = out -<.> ""
       need [source]
       join $ withPackage config qt5core $ qt5rcc source out
 
