@@ -2,7 +2,7 @@
 #include <QQuickView>
 #include <QQmlEngine>
 #include <QQmlContext>
-#include "ScheduleModel.hpp"
+#include "ScheduleWeek.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
   
   QQuickView view;
   view.setSource(QUrl("qrc:///gui/Prototype.qml"));
-  ScheduleModel schedule("test.json");
+  ScheduleWeek schedule("test.json");
   view.rootContext()->setContextProperty("schedule", &schedule);
   view.show();
 
