@@ -1,0 +1,1 @@
+{"modifier":"Limit","bound":{"nr":0,"week":0,"day":0},"child":{"modifier":"Constant","value":3},"condition":"EQ"}

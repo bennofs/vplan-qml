@@ -85,7 +85,7 @@ findObjects = do
     [ [ builddir </> "objects/cpp" </> s -<.> "cpp.o" | s <- cppSources, listToMaybe s /= Just '.']
     , [ builddir </> "objects/hs" </> s  -<.> "hs.o"  | s <- hsSources, listToMaybe s /= Just '.']
     , [ builddir </> "objects/moc" </> s -<.> "moc.o" | s <- cppHeaders, listToMaybe s /= Just '.']
-    , [ builddir </> x | x <- ["objects/rcc/resources.rcc.o"]]
+--    , [ builddir </> x | x <- ["objects/rcc/resources.rcc.o"]]
     ]
 
 main :: IO ()

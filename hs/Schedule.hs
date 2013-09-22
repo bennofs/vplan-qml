@@ -74,16 +74,13 @@ instance ToJSON LessonLocation where
 imaxOnOf :: (Bifunctor p, Limited (p i' v), i' ~ Index (p i' v)) => Iso' i i' -> Lens' a i -> p a v -> Maybe i
 imaxOnOf i j = fmap (review i) . imax . first (view $ j . i)
 
-hs_scheduleMaxLessons :: StablePtr Timetable -> IO CInt
-hs_scheduleMaxLessons ptr = fromInteger . fromMaybe 0 . imaxOnOf (from _DiscreteTime) lessonNr . view timetable <$> deRefStablePtr ptr
-
-hs_scheduleLoadFile :: CWString -> Int -> Ptr CWString -> IO (StablePtr Timetable)
-hs_scheduleLoadFile cwstr strlen cwerror = handling _IOException (newCWString . handle >=> poke cwerror >=> const (newStablePtr $ timetable # blank)) $ do
-  fileName <- peekCWStringLen (cwstr,strlen)
+hs_scheduleLoadFile :: CString -> Int -> Ptr CString -> IO (StablePtr Timetable)
+hs_scheduleLoadFile cstr strlen cerror = handling _IOException (newCString . handle >=> poke cerror >=> const (newStablePtr $ timetable # blank)) $ do
+  fileName <- peekCStringLen (cstr,strlen)
   result <- eitherDecode <$> LBS.readFile fileName
   case result of
     Left err -> do
-      newCWString err >>= poke cwerror
+      newCString err >>= poke cerror
       newStablePtr $ timetable # blank
     Right t -> do
       newStablePtr $ timetable # t
@@ -97,6 +94,13 @@ hs_scheduleIndex sp w d l = do
   s <- deRefStablePtr sp
   return $ s ^?! lessonIx (toInteger w) (_WeekDay # fromIntegral d) (toInteger l) . enum
 
-foreign export ccall hs_scheduleIndex :: StablePtr Timetable -> CInt -> CInt -> CInt -> IO CInt
-foreign export ccall hs_scheduleMaxLessons :: StablePtr Timetable -> IO CInt
-foreign export ccall hs_scheduleLoadFile :: CWString -> Int -> Ptr CWString -> IO (StablePtr Timetable)
+hs_dayMaxLessons :: StablePtr Timetable -> CInt -> CInt -> IO CInt
+hs_dayMaxLessons sp w d = error "hs_dayMaxLessons: not implemented"
+
+hs_cloneSchedule :: StablePtr Timetable -> IO (StablePtr Timetable)
+hs_cloneSchedule = deRefStablePtr >=> newStablePtr
+
+{- foreign export ccall hs_scheduleIndex :: StablePtr Timetable -> CInt -> CInt -> CInt -> IO CInt
+foreign export ccall hs_scheduleLoadFile :: CString -> Int -> Ptr CString -> IO (StablePtr Timetable)
+foreign export ccall hs_dayMaxLessons :: StablePtr Timetable -> CInt -> CInt -> IO CInt
+foreign export ccall hs_cloneSchedule :: StablePtr Timetable -> IO (StablePtr Timetable) -}

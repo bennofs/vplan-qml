@@ -5,6 +5,7 @@
 #include <HsFFI.h>
 
 #include "Index.hpp"
+#include "Schedule.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /// \brief Model for the lessons of a day in a schedule.
@@ -13,7 +14,9 @@
 /// the values are lessons.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class ScheduleDay : public QAbstractListModel {
-    
+
+    Q_OBJECT
+
   public:
     
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -22,7 +25,7 @@ class ScheduleDay : public QAbstractListModel {
     /// \param[in] schedule The schedule that contains the data for this model.
     /// \param[in] day      The day which is viewed by this model.
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    ScheduleDay(HsStablePtr schedule, Index day) : m_schedule(schedule), m_day(day) {}
+    ScheduleDay(Schedule schedule, WeekDate day) : m_schedule(schedule), m_day(day) {}
 
     // Model methods
     virtual QVariant data(QModelIndex const& index, int role) const override;
@@ -31,7 +34,7 @@ class ScheduleDay : public QAbstractListModel {
 
   private:
 
-    HsStablePtr m_schedule;
-    Index m_day;
-
+    Schedule m_schedule;
+    WeekDate m_day;
 };
+Q_DECLARE_METATYPE(ScheduleDay*)
