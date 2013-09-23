@@ -41,10 +41,6 @@ timetable = iso getTimetable Timetable
 newtype LessonLocation = LessonLocation { getLessonLocation ::  (WeekDate, DiscreteTime) }
   deriving (Eq, Ord, Monoid, Semigroup, Group)
 
-instance Enum LessonLocation where
-  toEnum x = LessonLocation (mempty, _DiscreteTime # toInteger x)
-  fromEnum = fromInteger . view lessonNr
-
 _LessonLocation :: Iso' LessonLocation (WeekDate, DiscreteTime)
 _LessonLocation = iso getLessonLocation LessonLocation
 
